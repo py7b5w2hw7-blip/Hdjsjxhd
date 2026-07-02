@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>TENDO | доступ к контенту</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{--green:#2dbd6e;--glow:#4eff9a;--gold:#f5c94e;--txt:#dff0e8;--muted:#5a8a6e;--dim:#2e4d3a;--dark:#040906;}
+html,body{min-height:100vh;overflow-x:hidden;}
+body{font-family:'DM Sans',sans-serif;background:#040c07;display:flex;align-items:center;justify-content:center;padding:28px 16px 52px;position:relative;}
+#bgCanvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+.card{position:relative;z-index:10;max-width:450px;width:100%;background:linear-gradient(160deg,rgba(14,30,18,.97) 0%,rgba(7,15,10,.99) 100%);border-radius:34px;padding:38px 24px 30px;border:1px solid rgba(45,189,110,.22);box-shadow:0 0 0 1px rgba(78,255,154,.06),0 50px 120px rgba(0,0,0,.85),0 0 80px rgba(45,189,110,.06),inset 0 1px 0 rgba(78,255,154,.18),inset 0 -1px 0 rgba(0,0,0,.6);animation:cardIn 1s cubic-bezier(.16,1,.3,1) both;}
+@keyframes cardIn{from{opacity:0;transform:translateY(44px) scale(.96);}to{opacity:1;transform:none;}}
+.card::before{content:'';position:absolute;top:-1px;left:20%;right:20%;height:2px;background:linear-gradient(90deg,transparent,var(--glow),transparent);border-radius:99px;animation:shimmer 4s ease-in-out infinite;}
+@keyframes shimmer{0%,100%{opacity:.3;left:35%;right:35%;}50%{opacity:1;left:8%;right:8%;}}
+.logo{text-align:center;margin-bottom:8px;}
+.logo h1{font-family:'Playfair Display',serif;font-size:66px;font-weight:900;background:linear-gradient(160deg,#f0fff5 0%,#a8ffce 30%,#4eff9a 60%,#2dbd6e 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:7px;line-height:1;animation:logoGlow 5s ease-in-out infinite;}
+@keyframes logoGlow{0%,100%{filter:drop-shadow(0 0 16px rgba(78,255,154,.25));}50%{filter:drop-shadow(0 0 40px rgba(78,255,154,.6));}}
+.sub{color:var(--muted);font-size:14px;font-weight:500;margin-top:10px;letter-spacing:.8px;}
+.top-image{width:100%;height:190px;object-fit:cover;object-position:center 20%;border-radius:20px;margin-bottom:20px;border:1px solid rgba(45,189,110,0.3);}
+.photo-caption{text-align:center;margin-top:8px;font-size:13px;font-weight:600;color:#7ad0ff;letter-spacing:0.5px;}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(45,189,110,.4),transparent);margin:24px 0;position:relative;}
+.section-label{font-size:10px;font-weight:700;letter-spacing:3px;color:var(--dim);text-transform:uppercase;text-align:center;margin-bottom:16px;}
+.tariff-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px;}
+.tariff-card{background:rgba(255,255,255,.028);border-radius:22px;padding:18px 18px 16px;border:1px solid rgba(45,189,110,.1);position:relative;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1);}
+.tariff-card:hover{border-color:rgba(45,189,110,.45);background:rgba(45,189,110,.07);box-shadow:0 12px 40px rgba(0,0,0,.5),0 0 30px rgba(78,255,154,.07);transform:translateY(-4px);}
+.tariff-card.premium{border:2px solid #ffd700;background:linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));}
+.tariff-card.premium .tariff-price{color: #ffd700;text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);}
+.badge{display:inline-block;background:linear-gradient(135deg, #ffd700, #f5a623);color: #040c07;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;padding:4px 14px;border-radius:99px;margin-bottom:10px;}
+.tariff-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.tariff-name{font-weight:700;font-size:20px;color:var(--txt);}
+.tariff-price{font-family:'Playfair Display',serif;font-weight:700;font-size:26px;color:var(--glow);text-shadow:0 0 20px rgba(78,255,154,.5);}
+.tariff-desc{font-size:13px;color:var(--dim);margin-bottom:12px;}
+.benefits{background:rgba(0,0,0,.3);border-radius:16px;padding:12px;margin:12px 0;font-size:12px;}
+.benefits p{margin:6px 0;display:flex;align-items:center;gap:8px;color:#9bc2a0;}
+.benefits p:before{content:'✅';font-size:11px;}
+.btn-pay{display:block;width:100%;padding:13px;border-radius:14px;border:1px solid rgba(45,189,110,.25);background:linear-gradient(135deg,rgba(45,189,110,.18),rgba(45,189,110,.07));font-weight:700;font-size:14px;color:var(--green);text-align:center;text-decoration:none;transition:all .3s ease;}
+.btn-pay:hover{background:linear-gradient(135deg,#2dbd6e,#1d9954);color:#fff;box-shadow:0 4px 24px rgba(45,189,110,.45);}
+.button-group{display:flex;gap:10px;margin:20px 0 12px;}
+.btn-review{flex:1;padding:13px;border-radius:16px;background:linear-gradient(135deg,rgba(245,201,78,.1),rgba(245,201,78,.03));border:1px solid rgba(245,201,78,.22);font-weight:600;font-size:14px;color:var(--gold);text-align:center;text-decoration:none;transition:all .25s ease;}
+.btn-review:hover{background:linear-gradient(135deg,rgba(245,201,78,.2),rgba(245,201,78,.08));border-color:rgba(245,201,78,.55);transform:translateY(-2px);}
+.btn-channel{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:16px;background:linear-gradient(135deg,rgba(45,189,110,.13),rgba(45,189,110,.04));border:1px solid rgba(45,189,110,.22);font-weight:700;font-size:15px;color:var(--green);text-decoration:none;margin-bottom:22px;transition:all .25s ease;}
+.btn-channel:hover{background:linear-gradient(135deg,rgba(45,189,110,.22),rgba(45,189,110,.1));border-color:rgba(45,189,110,.55);transform:translateY(-2px);}
+.promo-block{background:linear-gradient(135deg,rgba(45,189,110,.08),rgba(45,189,110,.02));border-radius:28px;padding:24px 20px;margin:20px 0;border:1px solid rgba(45,189,110,.35);text-align:center;}
+.promo-title{font-size:22px;font-weight:800;background:linear-gradient(135deg,#f5c94e,#ffdf8c);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;}
+.promo-sub{font-size:14px;color:var(--gold);margin-bottom:20px;letter-spacing:0.5px;line-height:1.4;}
+.search-note{font-size:12px;color:#8aac96;margin-bottom:16px;}
+.comment-buttons{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:16px 0;}
+.comment-btn{background:rgba(0,0,0,.5);border:1px solid rgba(78,255,154,.4);border-radius:40px;padding:8px 16px;font-size:13px;font-weight:500;color:#b8e4c5;cursor:pointer;transition:all .2s ease;text-align:center;max-width:100%;word-break:break-word;}
+.comment-btn:active{transform:scale(0.96);background:rgba(45,189,110,.2);}
+.promo-note{font-size:12px;color:#8aac96;margin:16px 0 12px;}
+.reply-block{background:rgba(0,0,0,.5);border-radius:20px;padding:14px;margin:16px 0;border-left:3px solid var(--gold);text-align:left;}
+.reply-title{font-size:13px;font-weight:800;color:var(--gold);margin-bottom:8px;letter-spacing:0.5px;}
+.reply-text{font-size:12px;color:#d0e8d8;line-height:1.5;}
+.reply-text strong{color:#ffdf8c;}
+.promo-send{display:inline-block;background:linear-gradient(135deg,#2dbd6e,#1d9954);border:none;border-radius:40px;padding:12px 28px;font-size:15px;font-weight:700;color:#040c07;text-decoration:none;margin-top:8px;transition:all .2s;cursor:pointer;}
+.promo-send:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(45,189,110,.5);}
+.footer{text-align:center;font-size:12px;font-weight:500;color:var(--dim);padding-top:18px;border-top:1px solid rgba(45,189,110,.08);}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<div class="card">
+  <div class="logo">
+    <h1>TENDO</h1>
+    <div class="sub">доступ к контенту</div>
+  </div>
+
+  <!-- ФОТО -->
+  <div style="margin-bottom:20px;">
+    <img src="https://d41chssnpqdne.cloudfront.net/user_upload_by_module/chat_bot/files/172956511/cllfDXMcuQiYlz5O.jpeg?Expires=1782994922&Signature=O6CoddKuzB7EYJBQ2mADljbRaGInOIQIAUtdy-tUOFwHx5h9amSy10o5~-Gwfv4T8LzDNPaPkCIFqq4OH6vRbumvgC8zZW7ZiPE42iCdvB7cJnvzn2MFQ8iN--zyWqckaTHPdaef6zNRPwsrxyeiIUEqtjqk1mjvKTdDavuAiEdZrwx4RM3TGDpOR8im96PT2g74jAMIjCmK3eG3OFU2ECtyBJzvrzCI9StD9Kc8cb1PRwqpdiKxtQ8MbkjeKAJknXjo6CVdazo4iDzRHEf5oTLHGkvsZ59fU90rCXSP6HQp9CpeERCzAyO~Emm4tdi29S99F85EcAK25MgOP-clcQ__&Key-Pair-Id=K3USGZIKWMDCSX" class="top-image" alt="Контент">
+    <div class="photo-caption">📁 1 ТБ реального контента</div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-label">✦ выберите пакет ✦</div>
+
+  <div class="tariff-list">
+    <div class="tariff-card premium">
+      <div class="badge">🔥 ЛУЧШИЙ ВЫБОР</div>
+      <div class="tariff-row"><span class="tariff-name">👑 Премиум пак</span><span class="tariff-price">950 ★</span></div>
+      <div class="tariff-desc">1 ТБ • полный доступ</div>
+      <div class="benefits">
+        <p>Более 30.000 видеоматериалов по тематике</p>
+        <p>Доступ НАВСЕГДА к архиву и закрытому тгк</p>
+        <p>Частое пополнение контента новыми видео</p>
+        <p>Возможность сохранять контент себе</p>
+      </div>
+      <a href="https://t.me/Bormor54bot" class="btn-pay">⭐ Оплатить звёздами</a>
+    </div>
+
+    <div class="tariff-card">
+      <div class="badge">🔥 ПОПУЛЯРНЫЙ</div>
+      <div class="tariff-row"><span class="tariff-name">🔥 Полный пак</span><span class="tariff-price">600 ★</span></div>
+      <div class="tariff-desc">50 ГБ • полный архив</div>
+      <div class="benefits">
+        <p>Более 9.000 видеоматериалов по тематике</p>
+        <p>Доступ НАВСЕГДА к архиву и закрытому тгк</p>
+        <p>Частое пополнение контента новыми видео</p>
+        <p>Возможность сохранять контент себе</p>
+      </div>
+      <a href="https://t.me/Bormor54bot" class="btn-pay">⭐ Оплатить звёздами</a>
+    </div>
+
+    <div class="tariff-card">
+      <div class="tariff-row"><span class="tariff-name">📁 Средний пак</span><span class="tariff-price">450 ★</span></div>
+      <div class="tariff-desc">15 ГБ • оптимальный выбор</div>
+      <div class="benefits">
+        <p>Более 4.000 видеоматериалов по тематике</p>
+        <p>Доступ НАВСЕГДА к архиву и закрытому тгк</p>
+        <p>Частое пополнение контента новыми видео</p>
+        <p>Возможность сохранять контент себе</p>
+      </div>
+      <a href="https://t.me/Bormor54bot" class="btn-pay">⭐ Оплатить звёздами</a>
+    </div>
+
+    <div class="tariff-card">
+      <div class="tariff-row"><span class="tariff-name">📦 Маленький пак</span><span class="tariff-price">350 ★</span></div>
+      <div class="tariff-desc">5 ГБ • стартовый набор</div>
+      <div class="benefits">
+        <p>Более 2.000 видеоматериалов по тематике</p>
+        <p>Доступ НАВСЕГДА к архиву и закрытому тгк</p>
+        <p>Частое пополнение контента новыми видео</p>
+        <p>Возможность сохранять контент себе</p>
+      </div>
+      <a href="https://t.me/Bormor54bot" class="btn-pay">⭐ Оплатить звёздами</a>
+    </div>
+  </div>
+
+  <div class="button-group">
+    <a href="https://t.me/otztendo5" class="btn-review">⭐ Отзывы</a>
+  </div>
+
+  <a href="https://t.me/+DcYfjUxNTkZkZjEx" class="btn-channel">🌿 Наш канал</a>
+
+  <!-- БЕСПЛАТНЫЙ ПАК -->
+  <div class="promo-block">
+    <div class="promo-title">🎁 БЕСПЛАТНЫЙ ПАК</div>
+    <div class="promo-sub">5 ГБ контента<br>за 20 комментариев в TikTok</div>
+
+    <div class="search-note">
+      🔍 В поиске TikTok наберите <strong>«детское питание»</strong><br>
+      📅 Комментарии оставляйте под видео, которым <strong>не больше 7 дней</strong><br>
+      ✏️ Пишите комментарии с упоминанием <strong>tendo.lat</strong> (Брау3ер)
+    </div>
+
+    <div class="promo-note" style="margin-top:8px; font-weight:600; color:var(--gold);">
+      📋 ВАРИАНТЫ КОММЕНТАРИЕВ (НАЖМИТЕ ДЛЯ КОПИРОВАНИЯ):
+    </div>
+    <div class="comment-buttons">
+      <button class="comment-btn" data-comment="tendo.lat прекрасное ❤️ (Брау3ер)">tendo.lat прекрасное ❤️ (Брау3ер)</button>
+      <button class="comment-btn" data-comment="tendo.lat шикарное ❤️ (Брау3ер)">tendo.lat шикарное ❤️ (Брау3ер)</button>
+      <button class="comment-btn" data-comment="tendo.lat прелесть ❤️ (Брау3ер)">tendo.lat прелесть ❤️ (Брау3ер)</button>
+      <button class="comment-btn" data-comment="tendo.lat любимое ❤️ (Брау3ер)">tendo.lat любимое ❤️ (Брау3ер)</button>
+      <button class="comment-btn" data-comment="tendo.lat имбуля ❤️ (Брау3ер)">tendo.lat имбуля ❤️ (Брау3ер)</button>
+    </div>
+
+    <div class="promo-note">
+      ⚠️ Под одним видео — один комментарий.<br>
+      Чередуйте варианты каждые 3–4 раза.
+    </div>
+
+    <div class="reply-block" style="border-left-color: #ff4444; background: rgba(255, 68, 68, 0.1);">
+      <div class="reply-title" style="color: #ff8888;">⚠️ ОБЯЗАТЕЛЬНО:</div>
+      <div class="reply-text">
+        <strong>лайкать свои комментарии и комментарии с упоминанием tendo.lat — иначе пак не будет выдан</strong>
+      </div>
+    </div>
+
+    <div class="reply-block">
+      <div class="reply-title">💬 ТАКЖЕ НУЖНО НАПИСАТЬ:</div>
+      <div class="reply-text">
+        <strong>10 положительных ответов</strong> на комментарии с упоминанием <strong>tendo.lat</strong><br>
+        Примеры ответов: <strong>«согл»</strong>, <strong>«бесспорно»</strong>, <strong>«согласен»</strong>, <strong>«факты»</strong>, 
+        <strong>«несомненно»</strong>, <strong>«имба»</strong>, <strong>«лучшее»</strong>, <strong>«легенда»</strong>, <strong>«наилучшее»</strong><br>
+        ⚡ На один комментарий можно ответить <strong>до 3 раз</strong> (но не повторяйте одинаковые ответы)
+      </div>
+    </div>
+
+    <!-- КНОПКА С ПРЕДУПРЕЖДЕНИЕМ (ОБНОВЛЕННАЯ ССЫЛКА) -->
+    <a href="https://t.me/freepaktendo" class="promo-send">✈️ Отправить скрины</a>
+    <div style="font-size:11px; color:#6a8a6e; margin-top:14px;">⏱ Выдача в течение 5 минут</div>
+  </div>
+
+  <div class="footer">🍼 После оплаты вы автоматически получите доступ к архиву</div>
+</div>
+
+<script>
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+
+function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+const fireflies = Array.from({length:45}, () => ({
+  x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+  r: Math.random() * 2 + 0.8, vx: (Math.random() - 0.5) * 0.4, vy: -(Math.random() * 0.5 + 0.15),
+  age: Math.random() * 400, maxLife: Math.random() * 220 + 130, hue: 120 + Math.random() * 50
+}));
+
+const leaves = Array.from({length:20}, () => ({
+  x: Math.random() * innerWidth, y: Math.random() * innerHeight - innerHeight,
+  size: Math.random() * 16 + 6, rot: Math.random() * Math.PI * 2,
+  rotSpeed: (Math.random() - 0.5) * 0.025, vx: (Math.random() - 0.5) * 0.7,
+  vy: Math.random() * 0.55 + 0.25, alpha: Math.random() * 0.55 + 0.18,
+  swing: Math.random() * Math.PI * 2, swingSpeed: Math.random() * 0.018 + 0.004
+}));
+
+const orbs = Array.from({length:6}, (_,i) => ({
+  x: (i/5) * innerWidth + Math.random() * 180 - 90,
+  y: innerHeight * (0.4 + Math.random() * 0.6),
+  r: Math.random() * 240 + 100, phase: Math.random() * Math.PI * 2,
+  speed: Math.random() * 0.004 + 0.001, green: Math.random() > 0.4
+}));
+
+function drawLeaf(x,y,size,rot,alpha){
+  ctx.save(); ctx.translate(x,y); ctx.rotate(rot); ctx.globalAlpha = alpha;
+  ctx.beginPath();
+  ctx.moveTo(0,-size); ctx.bezierCurveTo(size*0.85,-size*0.5,size*0.85,size*0.5,0,size);
+  ctx.bezierCurveTo(-size*0.85,size*0.5,-size*0.85,-size*0.5,0,-size);
+  ctx.fillStyle = `hsl(${120 + Math.random() * 30},52%,${11 + Math.random() * 9}%)`;
+  ctx.fill();
+  ctx.restore();
+}
+
+let t = 0;
+function draw(){
+  t += 0.016;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const bg = ctx.createRadialGradient(canvas.width/2,canvas.height*0.6,0,canvas.width/2,canvas.height*0.4,canvas.width);
+  bg.addColorStop(0,'rgb(10,22,14)'); bg.addColorStop(0.45,'rgb(6,14,9)'); bg.addColorStop(1,'rgb(3,8,5)');
+  ctx.fillStyle = bg; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  orbs.forEach(o => {
+    o.phase += o.speed;
+    const px = o.x + Math.sin(o.phase) * 70, py = o.y + Math.cos(o.phase * 0.7) * 35;
+    const g = ctx.createRadialGradient(px,py,0,px,py,o.r);
+    g.addColorStop(0, o.green ? 'rgba(45,189,110,0.06)' : 'rgba(20,80,40,0.08)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(px,py,o.r,o.r*0.55,0,0,Math.PI*2); ctx.fill();
+  });
+
+  leaves.forEach(l => {
+    l.swing += l.swingSpeed;
+    l.x += l.vx + Math.sin(l.swing) * 0.6; l.y += l.vy; l.rot += l.rotSpeed;
+    if(l.y > canvas.height + 30){ l.y = -30; l.x = Math.random() * canvas.width; }
+    drawLeaf(l.x,l.y,l.size,l.rot,l.alpha * Math.abs(Math.sin(l.swing * 0.5 + 1)));
+  });
+
+  fireflies.forEach(f => {
+    f.age++; f.x += f.vx + Math.sin(f.age*0.045)*0.4; f.y += f.vy + Math.cos(f.age*0.032)*0.25;
+    if(f.y < -10){ f.y = canvas.height+10; f.x = Math.random()*canvas.width; f.age=0; }
+    if(f.x < -10) f.x = canvas.width+10; if(f.x > canvas.width+10) f.x = -10;
+    const lr = (f.age % f.maxLife) / f.maxLife;
+    const alpha = lr < 0.1 ? lr*10 : lr > 0.85 ? (1-lr)*6.7 : 1;
+    const blink = 0.3 + 0.7 * Math.abs(Math.sin(f.age * 0.065));
+    const g = ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.r*8);
+    g.addColorStop(0, `hsla(${f.hue},100%,75%,${alpha*blink*0.85})`);
+    g.addColorStop(0.25, `hsla(${f.hue},100%,65%,${alpha*blink*0.35})`);
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(f.x,f.y,f.r*8,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = `hsla(${f.hue},100%,92%,${alpha*blink})`;
+    ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
+  });
+
+  const tm = ctx.createLinearGradient(0,0,0,canvas.height*0.2);
+  tm.addColorStop(0,'rgba(4,9,6,0.97)'); tm.addColorStop(1,'rgba(4,9,6,0)');
+  ctx.fillStyle = tm; ctx.fillRect(0,0,canvas.width,canvas.height*0.2);
+  const bm = ctx.createLinearGradient(0,canvas.height*0.62,0,canvas.height);
+  bm.addColorStop(0,'rgba(4,9,6,0)'); bm.addColorStop(1,'rgba(4,9,6,0.98)');
+  ctx.fillStyle = bm; ctx.fillRect(0,canvas.height*0.62,canvas.width,canvas.height*0.38);
+
+  requestAnimationFrame(draw);
+}
+draw();
+
+// ===== КОПИРОВАНИЕ КОММЕНТАРИЕВ =====
+document.querySelectorAll('.comment-btn').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    const textToCopy = this.getAttribute('data-comment');
+    if (!textToCopy) {
+      alert('Ошибка: текст для копирования не найден');
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(textToCopy)
+        .then(() => {
+          const originalText = this.innerText;
+          this.innerText = '✅ Скопировано!';
+          setTimeout(() => {
+            this.innerText = originalText;
+          }, 2000);
+        })
+        .catch(err => {
+          console.error('Ошибка копирования: ', err);
+          fallbackCopy(textToCopy, this);
+        });
+    } else {
+      fallbackCopy(textToCopy, this);
+    }
+  });
+});
+
+function fallbackCopy(text, button) {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  try {
+    document.execCommand('copy');
+    const originalText = button.innerText;
+    button.innerText = '✅ Скопировано!';
+    setTimeout(() => {
+      button.innerText = originalText;
+    }, 2000);
+  } catch (err) {
+    console.error('Fallback copy failed: ', err);
+    alert('Не удалось скопировать текст. Попробуйте выделить его вручную.');
+  }
+  document.body.removeChild(textarea);
+}
+</script>
+</body>
+</html>
